@@ -12,7 +12,7 @@
       <p class="eyebrow">Forest Board Prototype</p>
       <h1>森の掲示板みたいなやさしい質問で、AIに伝わる依頼文を作る</h1>
       <p class="lead">
-        難しいプロンプトを書かなくても、質問に答えるだけで他のAIへ渡せる完成プロンプトとJSONを生成します。
+        質問に答えるだけで、背景込みの構造化JSONと、別のAIへそのまま貼れる固定テンプレの共有文を作ります。
       </p>
     </section>
 
@@ -20,7 +20,7 @@
       <div class="panel question-panel">
         <div class="panel-head">
           <h2>質問フロー</h2>
-          <span id="progressLabel">1 / 6</span>
+          <span id="progressLabel">1 / 7</span>
         </div>
         <div class="question-card">
           <p class="question-kicker">Question</p>
@@ -66,12 +66,12 @@
 
     <section class="panel roadmap">
       <div class="panel-head">
-        <h2>GitHub Pages公開計画</h2>
+        <h2>設計方針</h2>
       </div>
       <ol>
-        <li>質問UIで `goal / audience / tone / constraints / deadline / output_format` を回収する</li>
-        <li>共有用プロンプトを生成して、他のAIにそのまま貼れる形にする</li>
-        <li>CTAから有料版や相談導線へ送る</li>
+        <li>`goal / audience / context / tone / constraints / deadline / output_format` を回収する</li>
+        <li>背景つきJSONを作り、薄い指示を避ける</li>
+        <li>出力形式ごとに固定テンプレへ変換して、他AIでのブレを減らす</li>
       </ol>
     </section>
   </main>

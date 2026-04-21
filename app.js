@@ -2,52 +2,95 @@ const steps = [
   {
     key: "goal",
     title: "まず、何を実現したいですか？",
-    help: "一番ほしい成果を短く言葉にします。",
-    choices: ["企画書を作る", "メールを書く", "プレゼン構成を作る", "依頼文を整理する"],
+    help: "最終的にほしい成果を短く書きます。",
+    choices: ["企画書を作りたい", "メールを書きたい", "プレゼンを作りたい", "依頼文を整理したい"],
     placeholder: "例: 営業向けの提案資料を作りたい",
   },
   {
     key: "audience",
     title: "それは誰に向けたものですか？",
-    help: "受け手が違うと、AIが選ぶ言葉も変わります。",
+    help: "相手が変わると、言葉づかいと構成が変わります。",
     choices: ["社内メンバー", "顧客", "上司", "不特定多数"],
     placeholder: "例: 社内の営業チーム",
   },
   {
+    key: "context",
+    title: "背景や状況を教えてください",
+    help: "なぜ必要か、今どんな状況かを書くと出力が強くなります。",
+    choices: ["初回提案", "既存案件の改善", "急ぎ対応", "情報整理から始めたい"],
+    placeholder: "例: 来週の営業会議で使う。相手は新規見込み客で、専門知識はあまりない。",
+  },
+  {
     key: "tone",
     title: "どんな雰囲気で伝えたいですか？",
-    help: "堅めか、やさしいか、簡潔かを決めます。",
+    help: "やさしい、簡潔、信頼感重視などを決めます。",
     choices: ["やさしい", "信頼感重視", "簡潔", "熱量高め"],
     placeholder: "例: やさしく親しみやすく",
   },
   {
     key: "constraints",
     title: "外せない条件はありますか？",
-    help: "文字数、禁止事項、読み手への配慮などを書きます。",
+    help: "禁止事項、文字数、含めるべき要素などを書きます。",
     choices: ["専門用語を減らす", "短くまとめる", "数字を入れる", "丁寧語にする"],
     placeholder: "例: 5分で読める長さ、専門用語は少なめ",
   },
   {
     key: "deadline",
     title: "いつまでに必要ですか？",
-    help: "日付があると、出力の粒度を調整できます。",
+    help: "締切があると出力の粒度を調整できます。",
     choices: ["今日中", "今週中", "今月中", "未定"],
     placeholder: "例: 2026-04-25",
   },
   {
     key: "output_format",
     title: "最終的にどんな形で出したいですか？",
-    help: "AIに作らせる最終成果物を指定します。",
+    help: "他AIに何を作らせたいかを選びます。",
     choices: ["slides", "email", "document", "task_request"],
     placeholder: "例: slides",
   },
 ];
+
+const TEMPLATE_MAP = {
+  slides: {
+    label: "プレゼン用",
+    instructions: [
+      "見出し構成から作ること",
+      "各スライドに要点と話す内容を分けて書くこと",
+      "相手が理解しやすい順序にすること",
+    ],
+  },
+  email: {
+    label: "メール用",
+    instructions: [
+      "件名から作ること",
+      "最初の3行で要件が伝わるようにすること",
+      "そのまま送れる自然な文面にすること",
+    ],
+  },
+  document: {
+    label: "文書用",
+    instructions: [
+      "見出し付きの本文にすること",
+      "背景、要点、次の行動を明確にすること",
+      "そのまま下書きとして使える密度にすること",
+    ],
+  },
+  task_request: {
+    label: "依頼文用",
+    instructions: [
+      "依頼内容、目的、期限、期待成果を明記すること",
+      "相手が動きやすい順番で整理すること",
+      "曖昧な表現を減らすこと",
+    ],
+  },
+};
 
 const state = {
   stepIndex: 0,
   answers: {
     goal: "",
     audience: "",
+    context: "",
     tone: "",
     constraints: [],
     deadline: "",
@@ -87,12 +130,12 @@ function currentStep() {
 
 function renderStep() {
   const step = currentStep();
+  const existing = state.answers[step.key];
+
   questionTitle.textContent = step.title;
   questionHelp.textContent = step.help;
   progressLabel.textContent = `${state.stepIndex + 1} / ${steps.length}`;
   freeText.placeholder = step.placeholder;
-
-  const existing = state.answers[step.key];
   freeText.value = Array.isArray(existing) ? existing.join("、") : existing;
 
   choiceList.innerHTML = "";
@@ -100,10 +143,12 @@ function renderStep() {
     const button = document.createElement("button");
     button.type = "button";
     button.className = "choice";
+
     const currentValue = Array.isArray(existing) ? existing.join(" ") : existing;
     if (currentValue.includes(choice)) {
       button.classList.add("active");
     }
+
     button.textContent = choice;
     button.addEventListener("click", () => {
       if (step.key === "constraints") {
@@ -116,9 +161,11 @@ function renderStep() {
         state.answers[step.key] = choice;
         freeText.value = choice;
       }
+
       renderStep();
       renderJson();
     });
+
     choiceList.appendChild(button);
   });
 
@@ -135,6 +182,7 @@ function buildPayload() {
   return {
     goal: state.answers.goal,
     audience: state.answers.audience,
+    context: state.answers.context,
     tone: state.answers.tone,
     constraints: state.answers.constraints,
     deadline: state.answers.deadline,
@@ -143,7 +191,7 @@ function buildPayload() {
 }
 
 function getMissingFields(payload) {
-  const required = ["goal", "audience", "tone", "deadline", "output_format"];
+  const required = ["goal", "audience", "context", "tone", "deadline", "output_format"];
   return required.filter((key) => !payload[key] || (Array.isArray(payload[key]) && payload[key].length === 0));
 }
 
@@ -154,6 +202,7 @@ function renderJson() {
   const validations = [
     ["goal", "目的"],
     ["audience", "対象"],
+    ["context", "背景"],
     ["tone", "トーン"],
     ["deadline", "期限"],
     ["output_format", "出力形式"],
@@ -177,25 +226,28 @@ function renderJson() {
 }
 
 function buildSharePrompt(payload) {
+  const template = TEMPLATE_MAP[payload.output_format] || TEMPLATE_MAP.document;
+  const constraintText = payload.constraints.length ? payload.constraints.join(", ") : "特になし";
+
   return [
-    "You are an expert assistant.",
-    "Create a high-quality output based on the following user intent.",
+    `あなたは${template.label}の作成が得意なプロのアシスタントです。`,
+    "以下の条件に基づいて、すぐ使える完成度の高い初稿を日本語で作成してください。",
     "",
-    "Requirements:",
-    `- Goal: ${payload.goal}`,
-    `- Audience: ${payload.audience}`,
-    `- Tone: ${payload.tone}`,
-    `- Constraints: ${payload.constraints.length ? payload.constraints.join(", ") : "None"}`,
-    `- Deadline: ${payload.deadline}`,
-    `- Output format: ${payload.output_format}`,
+    "固定ルール:",
+    ...template.instructions.map((item) => `- ${item}`),
+    "- 情報が不足していても、妥当な前提を置いて止まらずに出力すること",
+    "- 受け手に伝わりやすい順番で整理すること",
     "",
-    "Instructions:",
-    "- Produce an immediately usable first draft.",
-    "- Respect all constraints.",
-    "- Use the specified tone for the specified audience.",
-    "- If details are missing, make reasonable assumptions and keep moving.",
+    "依頼内容:",
+    `- 目的: ${payload.goal}`,
+    `- 対象: ${payload.audience}`,
+    `- 背景: ${payload.context}`,
+    `- トーン: ${payload.tone}`,
+    `- 制約: ${constraintText}`,
+    `- 期限: ${payload.deadline}`,
+    `- 出力形式: ${payload.output_format}`,
     "",
-    "Structured payload:",
+    "構造化データ:",
     JSON.stringify(payload, null, 2),
   ].join("\n");
 }
@@ -221,7 +273,7 @@ function generateSharePackage() {
 
   const prompt = buildSharePrompt(payload);
   state.lastPrompt = prompt;
-  resultStatus.textContent = "他のAIにそのまま貼れる共有文を作成しました。";
+  resultStatus.textContent = "背景込みの共有用プロンプトを作成しました。別のAIへそのまま貼れます。";
   renderGeneratedPrompt(prompt);
 }
 
@@ -263,6 +315,7 @@ copyPromptBtn.addEventListener("click", async () => {
     resultStatus.textContent = "先に共有文を作ってください。";
     return;
   }
+
   await navigator.clipboard.writeText(state.lastPrompt);
   copyPromptBtn.textContent = "コピー済み";
   setTimeout(() => {

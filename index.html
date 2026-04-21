@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Intent Bridge</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <main class="app-shell">
+    <section class="hero">
+      <p class="eyebrow">Forest Board Prototype</p>
+      <h1>森の掲示板みたいなやさしい質問で、AIに伝わる依頼文を作る</h1>
+      <p class="lead">
+        難しいプロンプトを書かなくても、質問に答えるだけで他のAIへ渡せる完成プロンプトとJSONを生成します。
+      </p>
+    </section>
+
+    <section class="workspace">
+      <div class="panel question-panel">
+        <div class="panel-head">
+          <h2>質問フロー</h2>
+          <span id="progressLabel">1 / 6</span>
+        </div>
+        <div class="question-card">
+          <p class="question-kicker">Question</p>
+          <h3 id="questionTitle"></h3>
+          <p id="questionHelp" class="question-help"></p>
+          <div id="choiceList" class="choice-list"></div>
+          <textarea id="freeText" rows="5" placeholder="補足があれば自由に書いてください"></textarea>
+          <div class="actions">
+            <button id="prevBtn" class="ghost" type="button">戻る</button>
+            <button id="nextBtn" type="button">次へ</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel output-panel">
+        <div class="panel-head">
+          <h2>構造化JSON</h2>
+          <button id="copyBtn" class="ghost small" type="button">JSONをコピー</button>
+        </div>
+        <pre id="jsonOutput"></pre>
+        <div class="status-block">
+          <h3>検証状況</h3>
+          <ul id="validationList"></ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel result-panel">
+      <div class="panel-head">
+        <h2>共有用プロンプト</h2>
+        <div class="button-row">
+          <button id="generateBtn" type="button">共有文を作る</button>
+          <button id="copyPromptBtn" class="ghost small" type="button">共有文をコピー</button>
+        </div>
+      </div>
+      <p id="resultStatus" class="result-status">質問に答えてから「共有文を作る」を押してください。</p>
+      <div id="resultOutput" class="result-output"></div>
+      <div class="cta-box">
+        <strong>無料版を公開中です。</strong>
+        <span>反響があれば、有料版の作成を検討します。</span>
+      </div>
+    </section>
+
+    <section class="panel roadmap">
+      <div class="panel-head">
+        <h2>GitHub Pages公開計画</h2>
+      </div>
+      <ol>
+        <li>質問UIで `goal / audience / tone / constraints / deadline / output_format` を回収する</li>
+        <li>共有用プロンプトを生成して、他のAIにそのまま貼れる形にする</li>
+        <li>CTAから有料版や相談導線へ送る</li>
+      </ol>
+    </section>
+  </main>
+
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
